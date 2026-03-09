@@ -91,17 +91,17 @@ export default function SettingsPage() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-50 p-4 sm:p-6 lg:p-8 font-sans text-slate-900">
+        <div className="min-h-[100dvh] bg-slate-50 p-4 sm:p-6 lg:p-8 pb-20 sm:pb-8 font-sans text-slate-900">
             <div className="max-w-3xl mx-auto">
 
                 {/* Header */}
-                <div className="flex items-center gap-3 mb-8">
-                    <div className="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center border border-indigo-200 shadow-sm">
-                        <Settings size={20} />
+                <div className="flex items-center gap-3 mb-6 sm:mb-8">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center border border-indigo-200 shadow-sm">
+                        <Settings size={20} className="sm:w-6 sm:h-6" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tight text-slate-900">System Settings</h1>
-                        <p className="text-sm text-slate-500 mt-0.5">
+                        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">System Settings</h1>
+                        <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
                             Customize your receipt details — saved to the cloud across all devices.
                         </p>
                     </div>
@@ -185,19 +185,21 @@ export default function SettingsPage() {
                                 </div>
                             </div>
 
-                            <div className="p-5 sm:p-6 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
-                                {isSaved ? (
-                                    <span className="text-emerald-600 font-semibold text-sm flex items-center gap-1.5 animate-in fade-in duration-300">
-                                        <CheckCircle size={16} /> Saved to cloud ✓
-                                    </span>
-                                ) : (
-                                    <span className="text-xs text-slate-400">Changes are synced across all devices.</span>
-                                )}
+                            <div className="p-4 sm:p-6 border-t border-slate-100 bg-slate-50 flex flex-col sm:flex-row items-center justify-between gap-4">
+                                <div className="order-2 sm:order-1 self-start sm:self-center">
+                                    {isSaved ? (
+                                        <span className="text-emerald-600 font-semibold text-sm flex items-center gap-1.5 animate-in fade-in duration-300">
+                                            <CheckCircle size={16} /> Saved to cloud ✓
+                                        </span>
+                                    ) : (
+                                        <span className="text-xs text-slate-400">Changes are synced across all devices.</span>
+                                    )}
+                                </div>
 
                                 <button
                                     type="submit"
                                     disabled={isSaving}
-                                    className="h-11 px-6 flex items-center justify-center gap-2 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-all shadow-[0_4px_10px_rgb(79,70,229,0.2)] active:scale-95 disabled:opacity-70 disabled:active:scale-100"
+                                    className="order-1 sm:order-2 w-full sm:w-auto h-12 sm:h-11 px-6 flex items-center justify-center gap-2 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-all shadow-[0_4px_10px_rgb(79,70,229,0.2)] active:scale-95 disabled:opacity-70 disabled:active:scale-100"
                                 >
                                     {isSaving
                                         ? <><RefreshCw size={16} className="animate-spin" /> Saving...</>
@@ -208,14 +210,14 @@ export default function SettingsPage() {
                     </div>
 
                     {/* Receipt Live Preview */}
-                    <div className="md:col-span-1">
-                        <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4 px-1">Live Preview</h3>
-                        <div className="bg-white p-4 shadow-xl border border-slate-200 mx-auto w-full max-w-[80mm] print:shadow-none min-h-[300px] flex flex-col items-center">
+                    <div className="md:col-span-1 mt-6 md:mt-0">
+                        <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4 px-1 text-center md:text-left">Live Preview</h3>
+                        <div className="bg-white p-4 shadow-sm md:shadow-xl border border-slate-200 mx-auto w-full max-w-[80mm] print:shadow-none min-h-[250px] sm:min-h-[300px] flex flex-col items-center rounded-sm">
                             <div className="text-center mb-6 w-full font-mono text-black">
                                 <h1 className="text-[16px] font-bold uppercase tracking-widest mb-1">Party Favour</h1>
-                                <p className="text-[10px] leading-snug">{settings.address1 || 'Address Line 1'}</p>
-                                {settings.address2 && <p className="text-[10px] leading-snug">{settings.address2}</p>}
-                                <p className="text-[10px] leading-snug">Tel: {settings.phone || 'Phone Number'}</p>
+                                <p className="text-[10px] leading-snug break-words">{settings.address1 || 'Address Line 1'}</p>
+                                {settings.address2 && <p className="text-[10px] leading-snug break-words">{settings.address2}</p>}
+                                <p className="text-[10px] leading-snug mt-1">Tel: {settings.phone || 'Phone Number'}</p>
                                 <div className="border-b border-dashed border-black/40 my-3 w-full" />
                                 <p className="text-[10px] text-gray-500 mt-4 mb-2 opacity-50 italic">List of Items...</p>
                                 <p className="text-[10px] text-gray-500 opacity-50 italic">Total Amount...</p>
@@ -225,7 +227,7 @@ export default function SettingsPage() {
                                 </div>
                             </div>
                         </div>
-                        <p className="text-xs text-slate-400 text-center mt-4">80mm Thermal Receipt Format</p>
+                        <p className="text-[10px] sm:text-xs text-slate-400 text-center mt-3 sm:mt-4">80mm Thermal Receipt Format</p>
                     </div>
 
                 </div>

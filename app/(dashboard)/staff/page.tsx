@@ -128,36 +128,36 @@ export default function StaffPage() {
     if (!isAdmin) return null;
 
     return (
-        <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
+        <div className="min-h-[100dvh] bg-slate-50 font-sans text-slate-900 pb-20 sm:pb-0">
             {/* Navbar */}
             <nav className="sticky top-0 z-40 bg-white border-b border-slate-200/60 backdrop-blur-xl">
-                <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <Link href="/dashboard" className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 text-slate-600 transition-colors">
-                            <ArrowLeft size={20} />
+                <div className="max-w-4xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between">
+                    <div className="flex items-center gap-2 sm:gap-4">
+                        <Link href="/dashboard" className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-full hover:bg-slate-100 text-slate-600 transition-colors">
+                            <ArrowLeft size={18} className="sm:w-5 sm:h-5" />
                         </Link>
-                        <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center text-violet-600 border border-violet-100">
-                                <Users size={18} />
+                        <div className="flex items-center gap-2 sm:gap-3">
+                            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-violet-50 flex items-center justify-center text-violet-600 border border-violet-100">
+                                <Users size={16} className="sm:w-4 sm:h-4" />
                             </div>
-                            <span className="font-bold text-lg text-slate-900">Staff Management</span>
+                            <span className="font-bold text-base sm:text-lg text-slate-900">Staff Management</span>
                         </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                        <span className="hidden sm:flex items-center gap-1.5 text-xs font-semibold text-violet-600 bg-violet-50 px-3 py-1.5 rounded-full border border-violet-100">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                        <span className="hidden sm:flex items-center gap-1.5 text-[10px] sm:text-xs font-semibold text-violet-600 bg-violet-50 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full border border-violet-100">
                             <Shield size={12} /> Admin View
                         </span>
                         <button
                             onClick={() => { setShowForm(true); setFormError(''); }}
-                            className="h-9 px-4 flex items-center gap-2 bg-violet-600 text-white rounded-lg text-sm font-bold hover:bg-violet-700 shadow-[0_2px_10px_rgba(124,58,237,0.3)] transition-all active:scale-95"
+                            className="h-9 px-3 sm:px-4 flex items-center gap-1.5 sm:gap-2 bg-violet-600 text-white rounded-lg text-xs sm:text-sm font-bold hover:bg-violet-700 shadow-[0_2px_10px_rgba(124,58,237,0.3)] transition-all active:scale-95"
                         >
-                            <Plus size={16} /> Add Employee
+                            <Plus size={16} /> <span className="hidden xs:inline">Add</span><span className="hidden md:inline"> Employee</span>
                         </button>
                     </div>
                 </div>
             </nav>
 
-            <main className="max-w-4xl mx-auto px-6 py-8 space-y-6">
+            <main className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-4 sm:space-y-6">
 
                 {/* Info Banner */}
                 <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex gap-3">
@@ -171,11 +171,11 @@ export default function StaffPage() {
 
                 {/* Staff List */}
                 <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
-                    <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-                        <h2 className="font-bold text-slate-900 flex items-center gap-2">
-                            <UserCheck size={18} className="text-violet-500" />
+                    <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-100 flex items-center justify-between">
+                        <h2 className="font-bold text-slate-900 flex items-center gap-2 text-sm sm:text-base">
+                            <UserCheck size={18} className="text-violet-500 sm:w-5 sm:h-5" />
                             All Staff
-                            <span className="bg-slate-100 text-slate-600 py-0.5 px-2 rounded-full text-xs font-semibold">{staff.length}</span>
+                            <span className="bg-slate-100 text-slate-600 py-0.5 px-2 rounded-full text-[10px] sm:text-xs font-semibold">{staff.length}</span>
                         </h2>
                         <button onClick={fetchStaff} className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
                             <RefreshCw size={15} />
@@ -198,31 +198,34 @@ export default function StaffPage() {
                                 const isSelf = member.id === profile?.id;
                                 const isAdminMember = member.role === 'admin';
                                 return (
-                                    <div key={member.id} className="px-6 py-4 flex items-center justify-between group">
-                                        <div className="flex items-center gap-4">
-                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${isAdminMember ? 'bg-violet-100 text-violet-700 border-2 border-violet-200' : 'bg-slate-100 text-slate-600 border border-slate-200'}`}>
+                                    <div key={member.id} className="px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between group">
+                                        <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0 pr-2">
+                                            <div className={`flex-shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold text-sm ${isAdminMember ? 'bg-violet-100 text-violet-700 border-2 border-violet-200' : 'bg-slate-100 text-slate-600 border border-slate-200'}`}>
                                                 {(member.name ?? 'U').charAt(0).toUpperCase()}
                                             </div>
-                                            <div>
-                                                <div className="flex items-center gap-2">
-                                                    <p className="font-semibold text-slate-900 text-sm">{member.name ?? '—'}</p>
-                                                    {isSelf && <span className="text-[10px] font-bold bg-indigo-50 text-indigo-600 px-1.5 py-0.5 rounded-full border border-indigo-100">YOU</span>}
+                                            <div className="min-w-0">
+                                                <div className="flex items-center gap-2 flex-wrap">
+                                                    <p className="font-semibold text-slate-900 text-xs sm:text-sm truncate">{member.name ?? '—'}</p>
+                                                    {isSelf && <span className="text-[9px] sm:text-[10px] font-bold bg-indigo-50 text-indigo-600 px-1.5 py-0.5 rounded-full border border-indigo-100">YOU</span>}
                                                 </div>
-                                                <p className="text-xs text-slate-400 mt-0.5">{member.email ?? 'No email'}</p>
+                                                <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5 truncate">{member.email ?? 'No email'}</p>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-3">
-                                            <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full border ${isAdminMember ? 'bg-violet-50 text-violet-700 border-violet-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}`}>
+                                        <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+                                            <span className={`text-[10px] flex sm:hidden font-bold px-2.5 py-1 rounded-full border ${isAdminMember ? 'bg-violet-50 text-violet-700 border-violet-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}`}>
+                                                {isAdminMember ? '👑' : '🧾'}
+                                            </span>
+                                            <span className={`text-[11px] hidden sm:flex font-bold px-2.5 py-1 rounded-full border ${isAdminMember ? 'bg-violet-50 text-violet-700 border-violet-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}`}>
                                                 {isAdminMember ? '👑 Admin' : '🧾 Cashier'}
                                             </span>
                                             {!isSelf && !isAdminMember && (
                                                 <button
                                                     onClick={() => handleDelete(member)}
                                                     disabled={deletingId === member.id}
-                                                    className="opacity-0 group-hover:opacity-100 w-8 h-8 flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                                                    className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
                                                     title="Remove employee"
                                                 >
-                                                    {deletingId === member.id ? <RefreshCw size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                                                    {deletingId === member.id ? <RefreshCw size={14} className="animate-spin" /> : <Trash2 size={16} className="sm:w-[14px] sm:h-[14px]" />}
                                                 </button>
                                             )}
                                         </div>
@@ -236,16 +239,16 @@ export default function StaffPage() {
 
             {/* Add Employee Modal */}
             {showForm && (
-                <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
-                        <div className="px-6 py-5 border-b border-slate-100 bg-slate-50">
-                            <h3 className="text-lg font-extrabold text-slate-900">Add New Employee</h3>
-                            <p className="text-sm text-slate-500 mt-0.5">They will be assigned the Cashier role and can log in immediately.</p>
+                <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-end sm:items-center justify-center sm:p-4 animate-in fade-in duration-200">
+                    <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-200">
+                        <div className="px-5 sm:px-6 py-4 sm:py-5 border-b border-slate-100 bg-slate-50">
+                            <h3 className="text-base sm:text-lg font-extrabold text-slate-900">Add New Employee</h3>
+                            <p className="text-xs sm:text-sm text-slate-500 mt-0.5">They will be assigned the Cashier role and can log in immediately.</p>
                         </div>
 
-                        <form onSubmit={handleAddEmployee} className="p-6 space-y-4">
+                        <form onSubmit={handleAddEmployee} className="p-5 sm:p-6 space-y-4">
                             <div>
-                                <label className="block text-sm font-semibold text-slate-700 mb-1.5 flex items-center gap-1.5">
+                                <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 flex items-center gap-1.5">
                                     <User size={13} className="text-slate-400" /> Full Name
                                 </label>
                                 <input
@@ -258,7 +261,7 @@ export default function StaffPage() {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-semibold text-slate-700 mb-1.5 flex items-center gap-1.5">
+                                <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 flex items-center gap-1.5">
                                     <Mail size={13} className="text-slate-400" /> Email Address
                                 </label>
                                 <input
@@ -271,7 +274,7 @@ export default function StaffPage() {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-semibold text-slate-700 mb-1.5 flex items-center gap-1.5">
+                                <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5 flex items-center gap-1.5">
                                     <Lock size={13} className="text-slate-400" /> Password
                                 </label>
                                 <div className="relative">
@@ -283,7 +286,7 @@ export default function StaffPage() {
                                         placeholder="min. 8 characters"
                                         className="w-full h-11 px-4 pr-12 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all text-slate-900 placeholder-slate-500"
                                     />
-                                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1">
                                         {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                                     </button>
                                 </div>
@@ -295,12 +298,12 @@ export default function StaffPage() {
                                 </div>
                             )}
 
-                            <div className="flex gap-3 pt-2">
-                                <button type="button" onClick={() => setShowForm(false)} className="flex-1 h-12 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition-all">
+                            <div className="flex gap-2 sm:gap-3 pt-2 pb-safe">
+                                <button type="button" onClick={() => setShowForm(false)} className="flex-1 h-12 bg-slate-100 text-slate-700 rounded-xl text-sm sm:text-base font-bold hover:bg-slate-200 transition-all active:scale-95">
                                     Cancel
                                 </button>
-                                <button type="submit" disabled={isSubmitting} className="flex-[2] h-12 flex items-center justify-center gap-2 bg-violet-600 text-white rounded-xl font-bold hover:bg-violet-700 shadow-[0_4px_14px_rgba(124,58,237,0.3)] transition-all active:scale-95 disabled:opacity-60">
-                                    {isSubmitting ? <RefreshCw size={18} className="animate-spin" /> : <Plus size={18} />}
+                                <button type="submit" disabled={isSubmitting} className="flex-[2] h-12 flex items-center justify-center gap-2 bg-violet-600 text-white rounded-xl text-sm sm:text-base font-bold hover:bg-violet-700 shadow-[0_4px_14px_rgba(124,58,237,0.3)] transition-all active:scale-95 disabled:opacity-60">
+                                    {isSubmitting ? <RefreshCw size={16} className="animate-spin" /> : <Plus size={16} />}
                                     {isSubmitting ? 'Creating...' : 'Create Employee'}
                                 </button>
                             </div>

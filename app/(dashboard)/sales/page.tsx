@@ -259,89 +259,89 @@ export default function SalesPage() {
             <div className="min-h-screen bg-slate-50 font-sans text-slate-900 no-print">
 
                 {/* ── Header ── */}
-                <div className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-slate-200/80 px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between shadow-sm">
-                    <div className="flex items-center gap-4">
-                        <Link href="/dashboard" className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-slate-100 text-slate-600 transition-colors">
-                            <ArrowLeft size={18} />
+                <div className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-slate-200/80 px-3 sm:px-6 lg:px-8 h-14 md:h-16 flex items-center justify-between shadow-sm">
+                    <div className="flex items-center gap-2 sm:gap-4">
+                        <Link href="/dashboard" className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-full hover:bg-slate-100 text-slate-600 transition-colors">
+                            <ArrowLeft size={18} className="sm:w-5 sm:h-5" />
                         </Link>
-                        <div className="flex items-center gap-2.5">
-                            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white shadow-md shadow-indigo-200">
-                                <Receipt size={16} strokeWidth={2.5} />
+                        <div className="flex items-center gap-2 sm:gap-2.5">
+                            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white shadow-md shadow-indigo-200">
+                                <Receipt size={14} className="sm:w-4 sm:h-4" strokeWidth={2.5} />
                             </div>
                             <div>
-                                <h1 className="font-bold text-base leading-tight text-slate-900">Sales History</h1>
-                                <p className="text-[11px] text-slate-400 leading-none">{filteredReceipts.length} transactions</p>
+                                <h1 className="font-bold text-sm sm:text-base leading-tight text-slate-900">Sales History</h1>
+                                <p className="text-[10px] sm:text-[11px] text-slate-400 leading-none">{filteredReceipts.length} <span className="hidden sm:inline">transactions</span><span className="inline sm:hidden">txns</span></p>
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 sm:gap-2">
                         {/* Clear All */}
                         {isAdmin && allSales.length > 0 && (
                             <button
                                 onClick={() => setShowClearAll(true)}
-                                className="flex items-center gap-1.5 bg-red-50 border border-red-200 hover:bg-red-100 text-red-600 px-3 py-2 rounded-lg text-sm font-semibold transition-all shadow-sm active:scale-95"
+                                className="flex items-center gap-1.5 bg-red-50 border border-red-200 hover:bg-red-100 text-red-600 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all shadow-sm active:scale-95"
                             >
                                 <Trash2 size={14} />
-                                <span className="hidden sm:inline">Clear All</span>
+                                <span className="hidden md:inline">Clear All</span>
                             </button>
                         )}
                         <button
                             onClick={fetchSales}
-                            className="flex items-center gap-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-3 py-2 rounded-lg text-sm font-medium transition-all shadow-sm active:scale-95"
+                            className="flex items-center gap-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all shadow-sm active:scale-95"
                         >
                             <RefreshCw size={14} className="text-slate-400" />
-                            Refresh
+                            <span className="hidden sm:inline">Refresh</span>
                         </button>
                     </div>
                 </div>
 
-                <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+                <div className="max-w-6xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6 pb-safe">
 
                     {/* ── Summary Stats ── */}
-                    <div className={`grid grid-cols-2 ${isAdmin ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-3 sm:gap-4 mb-6`}>
+                    <div className={`grid grid-cols-2 ${isAdmin ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-2 sm:gap-4 mb-4 sm:mb-6`}>
                         {[
                             { label: 'Total Revenue', value: `Rs. ${summary.totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, icon: <Banknote size={20} />, bg: 'bg-indigo-50', border: 'border-indigo-100', text: 'text-indigo-600', val: 'text-slate-900', adminOnly: false },
                             { label: 'Net Profit', value: `Rs. ${summary.totalProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, icon: <TrendingUp size={20} />, bg: 'bg-emerald-50', border: 'border-emerald-100', text: 'text-emerald-600', val: 'text-emerald-600', adminOnly: true },
                             { label: 'Transactions', value: summary.totalTransactions.toLocaleString(), icon: <Receipt size={20} />, bg: 'bg-blue-50', border: 'border-blue-100', text: 'text-blue-600', val: 'text-slate-900', adminOnly: false },
                             { label: 'Items Sold', value: summary.totalItemsSold.toLocaleString(), icon: <ShoppingBag size={20} />, bg: 'bg-violet-50', border: 'border-violet-100', text: 'text-violet-600', val: 'text-slate-900', adminOnly: false },
                         ].filter(c => !c.adminOnly || isAdmin).map(card => (
-                            <div key={card.label} className="bg-white p-4 sm:p-5 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
-                                <div className={`w-10 h-10 ${card.bg} ${card.text} rounded-lg flex items-center justify-center border ${card.border} flex-shrink-0`}>
-                                    {card.icon}
+                            <div key={card.label} className="bg-white p-3 sm:p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
+                                <div className={`w-8 h-8 sm:w-10 sm:h-10 ${card.bg} ${card.text} rounded-lg flex items-center justify-center border ${card.border} flex-shrink-0`}>
+                                    <div className="scale-75 sm:scale-100">{card.icon}</div>
                                 </div>
                                 <div className="min-w-0">
-                                    <p className="text-xs font-medium text-slate-500 truncate">{card.label}</p>
-                                    <p className={`text-lg sm:text-xl font-extrabold ${card.val} leading-tight`}>{card.value}</p>
+                                    <p className="text-[10px] sm:text-xs font-medium text-slate-500 truncate">{card.label}</p>
+                                    <p className={`text-base sm:text-xl font-extrabold ${card.val} leading-tight truncate`}>{card.value}</p>
                                 </div>
                             </div>
                         ))}
                     </div>
 
                     {/* ── Filters & Search ── */}
-                    <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-3 sm:p-4 mb-5 flex flex-col sm:flex-row gap-3">
+                    <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-3 mb-4 sm:mb-5 flex flex-col md:flex-row gap-3">
                         <div className="relative flex-1">
                             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                             <input
                                 type="text"
-                                placeholder="Search by receipt ID or item name..."
+                                placeholder="Search receipt or item..."
                                 value={searchTerm}
                                 onChange={e => setSearchTerm(e.target.value)}
-                                className="w-full h-10 pl-9 pr-8 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:bg-white transition-all placeholder-slate-500 text-slate-900"
+                                className="w-full h-10 sm:h-11 pl-9 pr-8 bg-slate-50 border border-slate-200 rounded-lg sm:rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:bg-white transition-all placeholder-slate-500 text-slate-900"
                             />
                             {searchTerm && (
-                                <button onClick={() => setSearchTerm('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
+                                <button onClick={() => setSearchTerm('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1">
                                     <X size={14} />
                                 </button>
                             )}
                         </div>
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                            <CalendarDays size={15} className="text-slate-400 mr-0.5 flex-shrink-0" />
+                        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 no-scrollbar w-full md:w-auto">
+                            <CalendarDays size={15} className="text-slate-400 mr-0.5 flex-shrink-0 hidden sm:block" />
                             {(['today', '7days', '30days', 'all'] as DateRange[]).map(range => (
                                 <button
                                     key={range}
                                     onClick={() => setDateRange(range)}
-                                    className={`h-9 px-3.5 rounded-lg text-xs font-semibold transition-all ${dateRange === range ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-200' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                                    className={`flex-shrink-0 h-9 sm:h-10 px-3 sm:px-4 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap ${dateRange === range ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-200' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
                                 >
                                     {dateRangeLabels[range]}
                                 </button>
@@ -371,8 +371,8 @@ export default function SalesPage() {
                     ) : (
                         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
 
-                            {/* Table Head */}
-                            <div className={`grid ${isAdmin ? 'grid-cols-[1fr_auto_auto_auto_auto]' : 'grid-cols-[1fr_auto_auto_auto]'} gap-x-4 px-5 py-3 bg-slate-50/80 border-b border-slate-100 text-xs font-semibold text-slate-500 uppercase tracking-wide`}>
+                            {/* Desktop Table Headers */}
+                            <div className="hidden sm:grid gap-x-4 px-5 py-3 bg-slate-50/80 border-b border-slate-100 text-xs font-semibold text-slate-500 uppercase tracking-wide" style={{ gridTemplateColumns: isAdmin ? '1fr auto auto auto auto' : '1fr auto auto auto' }}>
                                 <button onClick={() => handleSort('date')} className="flex items-center gap-1 text-left hover:text-slate-800 transition-colors">
                                     Date & Receipt <SortIcon col="date" />
                                 </button>
@@ -390,6 +390,15 @@ export default function SalesPage() {
                                 <span className="text-right">Actions</span>
                             </div>
 
+                            {/* Mobile Filters / Sort Header */}
+                            <div className="sm:hidden flex items-center justify-between px-4 py-3 bg-slate-50/80 border-b border-slate-100 text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                                <span>Recent Receipts</span>
+                                <div className="flex gap-3">
+                                    <button onClick={() => handleSort('date')} className="flex items-center gap-1">Date <SortIcon col="date" /></button>
+                                    <button onClick={() => handleSort('total')} className="flex items-center gap-1">Rev <SortIcon col="total" /></button>
+                                </div>
+                            </div>
+
                             {/* Rows */}
                             <ul className="divide-y divide-slate-100">
                                 {filteredReceipts.map(receipt => {
@@ -401,17 +410,21 @@ export default function SalesPage() {
                                     return (
                                         <li key={receipt.receipt_id} className={`transition-opacity ${isDeleting ? 'opacity-40 pointer-events-none' : ''}`}>
 
-                                            {/* Main Row */}
-                                            <div className={`grid ${isAdmin ? 'grid-cols-[1fr_auto_auto_auto_auto]' : 'grid-cols-[1fr_auto_auto_auto]'} gap-x-4 px-5 py-4 hover:bg-slate-50/80 transition-colors group items-center`}>
+                                            {/* ── DESKTOP ROW ── */}
+                                            <div className="hidden sm:grid gap-x-4 px-5 py-4 hover:bg-slate-50/80 transition-colors group items-center cursor-pointer" style={{ gridTemplateColumns: isAdmin ? '1fr auto auto auto auto' : '1fr auto auto auto' }} onClick={(e) => {
+                                                // Prevent expanding if clicking specific action buttons
+                                                if ((e.target as HTMLElement).closest('button[title]')) return;
+                                                toggleReceipt(receipt.receipt_id);
+                                            }}>
 
-                                                {/* Date & ID — clickable to expand */}
-                                                <button className="text-left" onClick={() => toggleReceipt(receipt.receipt_id)}>
+                                                {/* Date & ID */}
+                                                <div className="text-left">
                                                     <p className="font-bold text-slate-900 text-sm leading-tight">
                                                         {format(receipt.date, 'dd MMM yyyy')}
                                                         <span className="ml-2 text-[11px] font-normal text-slate-400">{format(receipt.date, 'hh:mm a')}</span>
                                                     </p>
                                                     <p className="text-xs font-mono text-slate-400 mt-0.5">{receipt.receipt_id}</p>
-                                                </button>
+                                                </div>
 
                                                 {/* Items count */}
                                                 <div className="flex items-center justify-end">
@@ -429,7 +442,7 @@ export default function SalesPage() {
 
                                                 {/* Profit */}
                                                 {isAdmin && (
-                                                    <div className="flex flex-col items-end">
+                                                    <div className="flex flex-col items-end justify-center">
                                                         <span className="font-bold text-emerald-600 text-sm tabular-nums">
                                                             Rs. {receipt.profit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                         </span>
@@ -438,7 +451,7 @@ export default function SalesPage() {
                                                 )}
 
                                                 {/* Actions */}
-                                                <div className="flex items-center justify-end gap-1.5">
+                                                <div className="flex items-center justify-end gap-1.5" onClick={e => e.stopPropagation()}>
                                                     {/* Generate Receipt */}
                                                     <button
                                                         onClick={() => setPrintReceipt(receipt)}
@@ -461,7 +474,6 @@ export default function SalesPage() {
                                                         </button>
                                                     )}
 
-                                                    {/* Expand Toggle */}
                                                     <button
                                                         onClick={() => toggleReceipt(receipt.receipt_id)}
                                                         title="View line items"
@@ -472,12 +484,49 @@ export default function SalesPage() {
                                                 </div>
                                             </div>
 
+                                            {/* ── MOBILE ROW (Card format) ── */}
+                                            <div className="sm:hidden flex items-start justify-between px-4 py-4 hover:bg-slate-50/50 transition-colors" onClick={() => toggleReceipt(receipt.receipt_id)}>
+                                                <div className="flex-1 pr-3">
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                        <span className="font-bold text-slate-900 text-sm">{format(receipt.date, 'MMM dd, yyyy')}</span>
+                                                        <span className="text-xs text-slate-500">{format(receipt.date, 'hh:mm a')}</span>
+                                                    </div>
+                                                    <p className="font-mono text-[10px] text-slate-400 mb-2 truncate">{receipt.receipt_id}</p>
+                                                    <div className="flex items-center gap-2 flex-wrap">
+                                                        <span className="bg-slate-100 text-slate-600 font-medium text-[10px] px-2 py-0.5 rounded-full">
+                                                            {itemsCount} {itemsCount === 1 ? 'item' : 'items'}
+                                                        </span>
+                                                        {isAdmin && receipt.profit > 0 && (
+                                                            <span className="bg-emerald-50 text-emerald-600 font-medium text-[10px] px-2 py-0.5 rounded-full border border-emerald-100">
+                                                                + Rs. {receipt.profit.toFixed(2)} profit
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <div className="flex flex-col items-end gap-3 flex-shrink-0" onClick={e => e.stopPropagation()}>
+                                                    <span className="font-bold text-slate-900 text-base">Rs. {receipt.total.toFixed(2)}</span>
+                                                    <div className="flex gap-2">
+                                                        <button onClick={() => setPrintReceipt(receipt)} className="w-8 h-8 bg-indigo-50 text-indigo-600 border border-indigo-100 rounded-lg flex items-center justify-center active:bg-indigo-100 transition-colors">
+                                                            <Printer size={14} />
+                                                        </button>
+                                                        {isAdmin && (
+                                                            <button onClick={() => setConfirmDelete(receipt)} className="w-8 h-8 bg-red-50 text-red-500 border border-red-100 rounded-lg flex items-center justify-center active:bg-red-100 transition-colors">
+                                                                <Trash2 size={14} />
+                                                            </button>
+                                                        )}
+                                                        <button onClick={() => toggleReceipt(receipt.receipt_id)} className={`w-8 h-8 flex items-center justify-center rounded-lg border transition-all active:scale-95 ${isExpanded ? 'bg-indigo-100 text-indigo-600 border-indigo-200' : 'bg-slate-100 text-slate-500 border-slate-200'}`}>
+                                                            {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+
                                             {/* Expanded Line Items */}
                                             {isExpanded && (
-                                                <div className="border-t border-slate-100 bg-slate-50/60 px-5 py-3">
-                                                    <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Line Items</p>
-                                                    <div className="rounded-lg border border-slate-200 overflow-hidden bg-white">
-                                                        <table className="w-full text-sm">
+                                                <div className="border-t border-slate-100 bg-slate-50 px-3 sm:px-5 py-3 sm:py-4">
+                                                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Line Items</p>
+                                                    <div className="rounded-lg border border-slate-200 overflow-x-auto bg-white no-scrollbar">
+                                                        <table className="w-full text-xs sm:text-sm min-w-[500px]">
                                                             <thead>
                                                                 <tr className="border-b border-slate-100 bg-slate-50">
                                                                     <th className="text-left px-4 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wide">Product</th>
@@ -517,14 +566,14 @@ export default function SalesPage() {
                             </ul>
 
                             {/* Table Footer */}
-                            <div className="px-5 py-3 border-t border-slate-100 bg-slate-50/60 flex items-center justify-between">
-                                <p className="text-xs text-slate-400 font-medium">
+                            <div className="px-4 sm:px-5 py-3 border-t border-slate-100 bg-slate-50/60 flex flex-col sm:flex-row items-center justify-between gap-1 sm:gap-2">
+                                <p className="text-[11px] sm:text-xs text-slate-400 font-medium">
                                     Showing <span className="text-slate-700 font-bold">{filteredReceipts.length}</span> of{' '}
                                     <span className="text-slate-700 font-bold">{groupedReceipts.length}</span> transactions
                                 </p>
-                                <p className="text-xs text-slate-400">
+                                <p className="text-[10px] sm:text-xs text-slate-400">
                                     Sorted by <span className="text-slate-600 font-semibold capitalize">{sortKey}</span>{' '}
-                                    ({sortDir === 'desc' ? 'newest/highest first' : 'oldest/lowest first'})
+                                    ({sortDir === 'desc' ? 'newest first' : 'oldest first'})
                                 </p>
                             </div>
                         </div>
@@ -536,17 +585,17 @@ export default function SalesPage() {
                 GENERATE RECEIPT OVERLAY  (screen only, triggers print)
             ══════════════════════════════════════════════════════ */}
             {printReceipt && (
-                <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 no-print">
-                    <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-sm flex flex-col overflow-hidden">
+                <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-end sm:items-center justify-center sm:p-4 no-print sm:pb-safe animate-in fade-in duration-200">
+                    <div className="bg-white rounded-t-[2rem] sm:rounded-[2rem] shadow-2xl w-full sm:max-w-sm flex flex-col overflow-hidden max-h-[95vh] animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-200">
                         {/* Modal Header */}
-                        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+                        <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-slate-100">
                             <div className="flex items-center gap-2">
                                 <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white">
                                     <Printer size={15} strokeWidth={2.5} />
                                 </div>
                                 <div>
                                     <p className="font-bold text-slate-900 text-sm leading-tight">Receipt Preview</p>
-                                    <p className="text-[11px] font-mono text-slate-400">{printReceipt.receipt_id}</p>
+                                    <p className="text-[10px] md:text-[11px] font-mono text-slate-400">{printReceipt.receipt_id}</p>
                                 </div>
                             </div>
                             <button onClick={() => setPrintReceipt(null)} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 text-slate-400 transition-colors">
@@ -604,16 +653,16 @@ export default function SalesPage() {
                         </div>
 
                         {/* Modal Footer */}
-                        <div className="flex gap-3 p-5">
+                        <div className="flex gap-2 sm:gap-3 p-4 sm:p-5 pb-safe bg-slate-50 border-t border-slate-100">
                             <button
                                 onClick={() => window.print()}
-                                className="flex-1 h-12 flex items-center justify-center gap-2 bg-indigo-600 text-white font-bold rounded-2xl shadow-[0_4px_10px_rgb(79,70,229,0.3)] hover:bg-indigo-700 transition-all active:scale-95"
+                                className="flex-1 h-12 flex items-center justify-center gap-2 bg-indigo-600 text-white text-sm sm:text-base font-bold rounded-2xl shadow-[0_4px_10px_rgb(79,70,229,0.3)] hover:bg-indigo-700 transition-all active:scale-95"
                             >
-                                <Printer size={18} /> Print Receipt
+                                <Printer size={16} className="sm:w-[18px] sm:h-[18px]" /> Print Receipt
                             </button>
                             <button
                                 onClick={() => setPrintReceipt(null)}
-                                className="flex-1 h-12 flex items-center justify-center gap-2 bg-slate-100 text-slate-700 font-bold rounded-2xl hover:bg-slate-200 transition-all active:scale-95 border border-slate-200"
+                                className="flex-1 h-12 flex items-center justify-center gap-2 bg-white text-slate-700 text-sm sm:text-base font-bold rounded-2xl hover:bg-slate-50 transition-all active:scale-95 border border-slate-200 shadow-sm"
                             >
                                 Close
                             </button>
@@ -626,8 +675,8 @@ export default function SalesPage() {
                 DELETE CONFIRMATION MODAL
             ══════════════════════════════ */}
             {confirmDelete && (
-                <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 no-print">
-                    <div className="bg-white rounded-[1.5rem] shadow-2xl w-full max-w-sm p-7 flex flex-col items-center text-center">
+                <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 no-print animate-in fade-in duration-200">
+                    <div className="bg-white rounded-[1.5rem] shadow-2xl w-full max-w-sm p-6 sm:p-7 flex flex-col items-center text-center animate-in zoom-in-95 duration-200">
                         <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4 border-4 border-red-50">
                             <AlertTriangle size={28} className="text-red-600" />
                         </div>
@@ -642,10 +691,10 @@ export default function SalesPage() {
                         <p className="text-xs text-red-500 font-semibold mb-6 bg-red-50 px-4 py-2 rounded-xl w-full border border-red-100">
                             ⚠️ This action cannot be undone.
                         </p>
-                        <div className="flex gap-3 w-full">
+                        <div className="flex gap-2 sm:gap-3 w-full">
                             <button
                                 onClick={() => handleDelete(confirmDelete)}
-                                className="flex-1 h-12 flex items-center justify-center gap-2 bg-red-600 text-white font-bold rounded-2xl hover:bg-red-700 transition-all active:scale-95"
+                                className="flex-1 h-12 flex items-center justify-center gap-2 bg-red-600 text-white font-bold rounded-2xl hover:bg-red-700 transition-all active:scale-95 text-sm sm:text-base shadow-[0_4px_10px_rgb(220,38,38,0.3)]"
                             >
                                 {deletingId === confirmDelete.receipt_id
                                     ? <RefreshCw size={16} className="animate-spin" />
@@ -653,7 +702,7 @@ export default function SalesPage() {
                             </button>
                             <button
                                 onClick={() => setConfirmDelete(null)}
-                                className="flex-1 h-12 flex items-center justify-center gap-2 bg-slate-100 text-slate-700 font-bold rounded-2xl hover:bg-slate-200 transition-all active:scale-95 border border-slate-200"
+                                className="flex-1 h-12 flex items-center justify-center gap-2 bg-slate-100 text-slate-700 font-bold rounded-2xl hover:bg-slate-200 transition-all active:scale-95 border border-slate-200 text-sm sm:text-base"
                             >
                                 Cancel
                             </button>
@@ -666,8 +715,8 @@ export default function SalesPage() {
                 CLEAR ALL CONFIRMATION MODAL
             ══════════════════════════════ */}
             {showClearAll && (
-                <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 no-print">
-                    <div className="bg-white rounded-[1.5rem] shadow-2xl w-full max-w-sm p-7 flex flex-col items-center text-center">
+                <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 no-print animate-in fade-in duration-200">
+                    <div className="bg-white rounded-[1.5rem] shadow-2xl w-full max-w-sm p-6 sm:p-7 flex flex-col items-center text-center animate-in zoom-in-95 duration-200">
                         <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4 border-4 border-red-50">
                             <AlertTriangle size={28} className="text-red-600" />
                         </div>
@@ -679,11 +728,11 @@ export default function SalesPage() {
                         <p className="text-xs text-red-500 font-semibold mb-6 bg-red-50 px-4 py-2 rounded-xl w-full border border-red-100">
                             ⚠️ This action cannot be undone.
                         </p>
-                        <div className="flex gap-3 w-full">
+                        <div className="flex gap-2 sm:gap-3 w-full">
                             <button
                                 onClick={handleClearAll}
                                 disabled={isClearing}
-                                className="flex-1 h-12 flex items-center justify-center gap-2 bg-red-600 text-white font-bold rounded-2xl hover:bg-red-700 transition-all active:scale-95 disabled:opacity-60"
+                                className="flex-1 h-12 flex items-center justify-center gap-2 bg-red-600 text-white font-bold rounded-2xl hover:bg-red-700 transition-all active:scale-95 disabled:opacity-60 text-sm sm:text-base shadow-[0_4px_10px_rgb(220,38,38,0.3)]"
                             >
                                 {isClearing
                                     ? <RefreshCw size={16} className="animate-spin" />
@@ -692,7 +741,7 @@ export default function SalesPage() {
                             <button
                                 onClick={() => setShowClearAll(false)}
                                 disabled={isClearing}
-                                className="flex-1 h-12 flex items-center justify-center gap-2 bg-slate-100 text-slate-700 font-bold rounded-2xl hover:bg-slate-200 transition-all active:scale-95 border border-slate-200 disabled:opacity-60"
+                                className="flex-1 h-12 flex items-center justify-center gap-2 bg-slate-100 text-slate-700 font-bold rounded-2xl hover:bg-slate-200 transition-all active:scale-95 border border-slate-200 disabled:opacity-60 text-sm sm:text-base"
                             >
                                 Cancel
                             </button>

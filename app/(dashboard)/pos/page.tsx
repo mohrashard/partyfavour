@@ -1,12 +1,20 @@
 ﻿"use client";
 
 import { useState, useEffect } from 'react';
+
+function useBreakpoint() {
+    const [w, setW] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
+    useEffect(() => { const h = () => setW(window.innerWidth); window.addEventListener('resize', h); return () => window.removeEventListener('resize', h); }, []);
+    return { isMobile: w < 768, isTablet: w >= 768 && w < 1024, isDesktop: w >= 1024 };
+}
 import { supabase } from '../../lib/supabase';
 import { useRole } from '@/hooks/useRole';
 import { Package, Plus, Trash2, ArrowLeft, Search, RefreshCw, ShoppingCart, Minus, Printer, CheckCircle, Ticket, ArrowRight, AlertTriangle, X, RotateCcw, CreditCard, Banknote, QrCode, SplitSquareHorizontal, CheckCircle2, Users, Clock, ClipboardList, Phone, UserPlus, ArrowDownRight } from 'lucide-react';
 import Link from 'next/link';
 
 export default function POSPage() {
+    const { isMobile } = useBreakpoint();
+    const [mobileCartOpen, setMobileCartOpen] = useState(false);
     const [inventory, setInventory] = useState<any[]>([]);
     const [cart, setCart] = useState<any[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
@@ -513,55 +521,51 @@ export default function POSPage() {
                 }
             `}} />
 
-            <div className={`h-screen flex flex-col overflow-hidden print:hidden select-none font-sans text-slate-900 transition-colors duration-500 ${isReturnMode ? 'bg-red-50/30' : 'bg-slate-50'}`}>
+            <div className={`h-screen h-[100dvh] flex flex-col overflow-hidden print:hidden select-none font-sans text-slate-900 transition-colors duration-500 ${isReturnMode ? 'bg-red-50/30' : 'bg-slate-50'}`}>
 
                 {/* Navbar */}
-                <nav className={`h-16 flex-shrink-0 bg-white border-b px-4 sm:px-6 flex items-center justify-between z-10 shadow-sm transition-colors ${isReturnMode ? 'border-red-200' : 'border-slate-200/80'}`}>
-                    <div className="flex items-center gap-4">
-                        <Link href="/" className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 text-slate-600 transition-colors">
-                            <ArrowLeft size={20} />
+                <nav className={`h-14 md:h-16 flex-shrink-0 bg-white border-b px-3 sm:px-4 md:px-6 flex items-center justify-between z-10 shadow-sm transition-colors ${isReturnMode ? 'border-red-200' : 'border-slate-200/80'}`}>
+                    <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+                        <Link href="/" className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-full hover:bg-slate-100 text-slate-600 transition-colors">
+                            <ArrowLeft size={18} />
                         </Link>
                         <div className="flex items-center gap-2">
-                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-white shadow-md ${isReturnMode ? 'bg-red-600 shadow-red-200' : 'bg-indigo-600 shadow-indigo-200'}`}>
-                                {isReturnMode ? <RotateCcw size={16} strokeWidth={2.5} /> : <Ticket size={18} strokeWidth={2.5} />}
+                            <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center text-white shadow-md ${isReturnMode ? 'bg-red-600 shadow-red-200' : 'bg-indigo-600 shadow-indigo-200'}`}>
+                                {isReturnMode ? <RotateCcw size={14} strokeWidth={2.5} /> : <Ticket size={16} strokeWidth={2.5} />}
                             </div>
-                            <span className="font-bold text-lg tracking-tight text-slate-900 hidden sm:block">
+                            <span className="font-bold text-base sm:text-lg tracking-tight text-slate-900 hidden sm:block">
                                 {isReturnMode ? 'Refund Register' : 'Cash Register'}
                             </span>
                         </div>
                     </div>
 
-                    <div className="flex-1 max-w-xl mx-4 sm:mx-8 relative">
-                        <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <div className="flex-1 max-w-xl mx-2 sm:mx-4 md:mx-8 relative">
+                        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                         <input
                             type="text"
-                            placeholder="Search products by name or SKU..."
+                            placeholder={isMobile ? 'Search...' : 'Search products by name or SKU...'}
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
-                            className="w-full h-11 pl-11 pr-4 bg-slate-100/70 border border-slate-200/80 rounded-full text-sm font-medium focus:outline-none focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-inner placeholder-slate-500 text-slate-900"
+                            className="w-full h-9 sm:h-11 pl-9 sm:pl-11 pr-3 sm:pr-4 bg-slate-100/70 border border-slate-200/80 rounded-full text-sm font-medium focus:outline-none focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-inner placeholder-slate-500 text-slate-900"
                         />
                     </div>
 
-                    <div className="flex items-center gap-3">
-                        {/* Payout Button */}
+                    <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
                         {activeShift && (
                             <button
                                 onClick={() => setPayoutModal(true)}
-                                className="h-9 px-3 flex items-center gap-2 rounded-lg text-sm font-bold transition-all border shadow-sm bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100"
+                                className="h-8 sm:h-9 px-2 sm:px-3 flex items-center gap-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all border shadow-sm bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100"
                             >
-                                <ArrowDownRight size={16} strokeWidth={2.5} />
-                                <span className="hidden sm:block">Payout Exp.</span>
+                                <ArrowDownRight size={14} strokeWidth={2.5} />
+                                <span className="hidden md:block">Payout</span>
                             </button>
                         )}
-
-                        {/* Shift Button */}
                         <button
                             onClick={() => setShiftModal(activeShift ? 'close' : 'open')}
-                            className={`h-9 px-3 flex items-center gap-2 rounded-lg text-sm font-bold transition-all border shadow-sm ${activeShift ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
-                                }`}
+                            className={`h-8 sm:h-9 px-2 sm:px-3 flex items-center gap-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all border shadow-sm ${activeShift ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'}`}
                         >
                             <Clock size={14} />
-                            <span className="hidden sm:inline">{activeShift ? 'Close Shift' : 'Open Shift'}</span>
+                            <span className="hidden md:inline">{activeShift ? 'Close Shift' : 'Open Shift'}</span>
                         </button>
                         <button
                             onClick={() => {
@@ -573,44 +577,44 @@ export default function POSPage() {
                                 setIsReturnMode(!isReturnMode);
                                 setCart([]);
                             }}
-                            className={`h-9 px-4 flex items-center gap-2 rounded-lg text-sm font-bold transition-all border shadow-sm ${isReturnMode ? 'bg-red-100 text-red-700 border-red-200 hover:bg-red-200' : 'bg-white text-slate-700 border-slate-200 hover:bg-red-50 hover:text-red-600'}`}
+                            className={`h-8 sm:h-9 px-2 sm:px-4 flex items-center gap-1.5 rounded-lg text-xs sm:text-sm font-bold transition-all border shadow-sm ${isReturnMode ? 'bg-red-100 text-red-700 border-red-200 hover:bg-red-200' : 'bg-white text-slate-700 border-slate-200 hover:bg-red-50 hover:text-red-600'}`}
                         >
                             <RotateCcw size={14} />
-                            {isReturnMode ? 'Exit Refund Mode' : 'Refund Mode'}
+                            <span className="hidden sm:inline">{isReturnMode ? 'Exit Refund' : 'Refund'}</span>
                         </button>
                     </div>
                 </nav>
 
                 {/* Shift Status Banner */}
                 {!activeShift && (
-                    <div className="bg-amber-50 border-b border-amber-200 px-6 py-2 flex items-center gap-2 text-amber-800 text-sm font-semibold">
-                        <AlertTriangle size={15} className="text-amber-500" />
-                        No active shift. Sales are still recorded, but{' '}
-                        <button onClick={() => setShiftModal('open')} className="underline hover:text-amber-900">click here to open a shift</button>
-                        {' '}to track cash drawer.
+                    <div className="bg-amber-50 border-b border-amber-200 px-3 sm:px-6 py-2 flex items-center gap-2 text-amber-800 text-xs sm:text-sm font-semibold flex-wrap">
+                        <AlertTriangle size={14} className="text-amber-500 flex-shrink-0" />
+                        <span>No active shift.</span>
+                        <button onClick={() => setShiftModal('open')} className="underline hover:text-amber-900">Open a shift</button>
+                        <span className="hidden sm:inline">to track cash drawer.</span>
                     </div>
                 )}
                 {activeShift && (
-                    <div className="bg-emerald-50 border-b border-emerald-200 px-6 py-2 flex items-center justify-between text-emerald-700 text-xs font-semibold overflow-x-auto no-scrollbar gap-4">
-                        <div className="flex items-center gap-4 flex-shrink-0">
-                            <div className="flex items-center gap-1.5"><Clock size={13} className="text-emerald-500" /> Opened {new Date(activeShift.opened_at).toLocaleTimeString()}</div>
-                            <div className="flex items-center gap-1.5"><Users size={13} className="text-emerald-500" /> {activeShift.cashier_name}</div>
-                            <div className="flex items-center gap-1.5 font-bold">Float Rs.{activeShift.opening_cash}</div>
+                    <div className="bg-emerald-50 border-b border-emerald-200 px-3 sm:px-6 py-2 flex flex-col sm:flex-row sm:items-center justify-between text-emerald-700 text-[10px] sm:text-xs font-semibold gap-1.5 sm:gap-4">
+                        <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
+                            <div className="flex items-center gap-1"><Clock size={12} className="text-emerald-500" /> {new Date(activeShift.opened_at).toLocaleTimeString()}</div>
+                            <div className="flex items-center gap-1"><Users size={12} className="text-emerald-500" /> {activeShift.cashier_name}</div>
+                            <div className="font-bold">Float Rs.{activeShift.opening_cash}</div>
                         </div>
-                        <div className="flex items-center gap-6 flex-shrink-0">
-                            <div className="flex items-center gap-1.5">Sales <span className="font-extrabold">Rs. {shiftSalesTotal.toFixed(2)}</span></div>
-                            <div className="flex items-center gap-1.5 text-red-600">Refunds <span className="font-extrabold">Rs. {shiftRefundsTotal.toFixed(2)}</span></div>
-                            <div className="flex items-center gap-1.5 text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-100">
-                                Net Cash <span className="font-extrabold">Rs. {(activeShift.opening_cash + shiftSalesTotal - shiftRefundsTotal - shiftPayoutsTotal).toFixed(2)}</span>
+                        <div className="flex items-center gap-3 sm:gap-6 flex-wrap">
+                            <div>Sales <span className="font-extrabold">Rs. {shiftSalesTotal.toFixed(2)}</span></div>
+                            <div className="text-red-600">Refunds <span className="font-extrabold">Rs. {shiftRefundsTotal.toFixed(2)}</span></div>
+                            <div className="text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-100">
+                                Net <span className="font-extrabold">Rs. {(activeShift.opening_cash + shiftSalesTotal - shiftRefundsTotal - shiftPayoutsTotal).toFixed(2)}</span>
                             </div>
                         </div>
                     </div>
                 )}
 
                 {/* Main Content Area */}
-                <div className="flex-1 flex overflow-hidden">
-                    {/* Left Side: Product Grid */}
-                    <div className="flex-1 overflow-y-auto relative flex flex-col">
+                <div className="flex-1 flex overflow-hidden relative">
+                    {/* Left Side: Product Grid — full width on mobile */}
+                    <div className={`flex-1 overflow-y-auto relative flex flex-col ${isMobile && mobileCartOpen ? 'hidden' : ''}`}>
                         {/* Category Filter Bar or Refund Search */}
                         <div className="flex-shrink-0 px-4 pt-4 pb-2 border-b border-slate-200/80 bg-white/80 backdrop-blur-sm sticky top-0 z-10 transition-all">
                             {isReturnMode ? (
@@ -663,7 +667,7 @@ export default function POSPage() {
                                 </div>
                             )}
                         </div>
-                        <div className="flex-1 overflow-y-auto p-4 sm:p-5 pb-24">
+                        <div className="flex-1 overflow-y-auto p-3 sm:p-5 pb-28 md:pb-6">
                             {loading ? (
                                 <div className="h-full flex flex-col items-center justify-center text-slate-400 gap-3">
                                     <RefreshCw size={32} className="animate-spin opacity-50 text-indigo-500" />
@@ -706,14 +710,42 @@ export default function POSPage() {
                         </div>
                     </div>
 
-                    {/* Right Side: Smart Cart */}
-                    <div className="w-[360px] lg:w-[420px] flex-shrink-0 bg-white border-l border-slate-200 shadow-2xl flex flex-col z-20">
+                    {/* Mobile Floating Cart Button */}
+                    {isMobile && !mobileCartOpen && (
+                        <button
+                            onClick={() => setMobileCartOpen(true)}
+                            className={`fixed bottom-5 right-5 z-30 w-16 h-16 rounded-full shadow-2xl flex items-center justify-center transition-all active:scale-90 ${isReturnMode ? 'bg-red-600 hover:bg-red-700' : 'bg-indigo-600 hover:bg-indigo-700'}`}
+                        >
+                            <ShoppingCart size={24} className="text-white" />
+                            {cart.length > 0 && (
+                                <span className="absolute -top-1 -right-1 min-w-[22px] h-[22px] bg-white text-indigo-700 text-[11px] font-extrabold rounded-full flex items-center justify-center border-2 border-indigo-600 px-1 shadow-md">
+                                    {cart.reduce((sum, item) => sum + (Number(item.cartQty) || 0), 0)}
+                                </span>
+                            )}
+                        </button>
+                    )}
+
+                    {/* Right Side: Smart Cart — sidebar on desktop, overlay on mobile */}
+                    <div className={`${isMobile
+                        ? `fixed inset-0 z-40 flex flex-col bg-white transition-transform duration-300 ease-out ${mobileCartOpen ? 'translate-y-0' : 'translate-y-full pointer-events-none'}`
+                        : 'w-[360px] lg:w-[420px] flex-shrink-0 bg-white border-l border-slate-200 shadow-2xl flex flex-col z-20'
+                        }`}>
                         {/* Cart Header */}
-                        <div className={`h-16 flex items-center justify-between px-6 border-b border-slate-100 ${isReturnMode ? 'bg-red-50/50' : ''}`}>
-                            <h2 className="font-bold text-lg text-slate-900 flex items-center gap-2">
-                                <ShoppingCart size={20} className={isReturnMode ? "text-red-500" : "text-indigo-500"} />
-                                {isReturnMode ? 'Refunding Items' : 'Current Sale'}
-                            </h2>
+                        <div className={`h-14 sm:h-16 flex items-center justify-between px-4 sm:px-6 border-b border-slate-100 flex-shrink-0 ${isReturnMode ? 'bg-red-50/50' : ''}`}>
+                            <div className="flex items-center gap-2">
+                                {isMobile && (
+                                    <button
+                                        onClick={() => setMobileCartOpen(false)}
+                                        className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 text-slate-500 mr-1"
+                                    >
+                                        <X size={20} />
+                                    </button>
+                                )}
+                                <h2 className="font-bold text-base sm:text-lg text-slate-900 flex items-center gap-2">
+                                    <ShoppingCart size={18} className={isReturnMode ? "text-red-500" : "text-indigo-500"} />
+                                    {isReturnMode ? 'Refunding' : 'Cart'}
+                                </h2>
+                            </div>
                             <div className="flex items-center gap-2">
                                 {cart.length > 0 && (
                                     <button
@@ -790,7 +822,7 @@ export default function POSPage() {
                         {/* Cart Math & Discounts */}
                         <div className="bg-slate-50 border-t border-slate-200">
                             {!isReturnMode && (
-                                <div className="px-4 pt-4 pb-2 flex gap-2 border-b border-slate-100/50">
+                                <div className="px-3 sm:px-4 pt-3 sm:pt-4 pb-2 flex gap-2 border-b border-slate-100/50">
                                     <div className="flex-1 flex bg-white border border-slate-200 rounded-lg overflow-hidden focus-within:border-indigo-500 focus-within:ring-2 ring-indigo-500/20 transition-all">
                                         <button
                                             onClick={() => setDiscount(d => ({ ...d, type: d.type === 'fixed' ? 'percent' : 'fixed' }))}
@@ -821,8 +853,8 @@ export default function POSPage() {
                                 </div>
                             )}
 
-                            <div className="p-6 pb-8 sm:pb-6">
-                                <div className="flex justify-between items-center mb-1.5 text-slate-500 text-sm">
+                            <div className="p-4 sm:p-6 pb-6 sm:pb-8 safe-area-bottom">
+                                <div className="flex justify-between items-center mb-1.5 text-slate-500 text-xs sm:text-sm">
                                     <span>Subtotal</span>
                                     <span className="font-semibold text-slate-700">Rs. {rawSubtotal.toFixed(2)}</span>
                                 </div>
@@ -839,17 +871,17 @@ export default function POSPage() {
                                     </div>
                                 )}
 
-                                <div className="flex justify-between items-end mb-6 mt-4 pt-4 border-t border-slate-200">
-                                    <span className="font-bold text-slate-900 text-lg">Total</span>
-                                    <span className={`font-extrabold text-4xl tracking-tight ${isReturnMode ? 'text-red-600' : 'text-indigo-600'}`}>
+                                <div className="flex justify-between items-end mb-4 sm:mb-6 mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-slate-200">
+                                    <span className="font-bold text-slate-900 text-base sm:text-lg">Total</span>
+                                    <span className={`font-extrabold text-2xl sm:text-4xl tracking-tight ${isReturnMode ? 'text-red-600' : 'text-indigo-600'}`}>
                                         {isReturnMode ? '-' : ''}Rs. {cartTotalNormal.toFixed(2)}
                                     </span>
                                 </div>
 
                                 <button
-                                    onClick={openPaymentModal}
+                                    onClick={() => { openPaymentModal(); if (isMobile) setMobileCartOpen(false); }}
                                     disabled={cart.length === 0}
-                                    className={`w-full h-16 flex items-center justify-center gap-2 text-white rounded-[1rem] text-lg font-bold hover:shadow-xl transition-all active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100 disabled:hover:shadow-none ${isReturnMode ? 'bg-red-600 hover:bg-red-700 hover:shadow-red-200' : 'bg-slate-900 hover:bg-slate-800 hover:shadow-slate-300'}`}
+                                    className={`w-full h-14 sm:h-16 flex items-center justify-center gap-2 text-white rounded-[1rem] text-base sm:text-lg font-bold hover:shadow-xl transition-all active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100 disabled:hover:shadow-none ${isReturnMode ? 'bg-red-600 hover:bg-red-700 hover:shadow-red-200' : 'bg-slate-900 hover:bg-slate-800 hover:shadow-slate-300'}`}
                                 >
                                     {isReturnMode ? (
                                         <>Refund Rs. {cartTotalNormal.toFixed(2)} <RotateCcw size={20} className="ml-1 opacity-70" /></>
@@ -865,28 +897,28 @@ export default function POSPage() {
 
             {/* --- PAYMENT TENDERING MODAL --- */}
             {checkoutModal && (
-                <div className="fixed inset-0 z-[60] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-                    <div className="bg-white rounded-[1.5rem] shadow-2xl w-full max-w-lg flex flex-col max-h-[95vh] overflow-hidden animate-in zoom-in-95 duration-200">
-                        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 flex-shrink-0 z-10">
+                <div className="fixed inset-0 z-[60] bg-slate-900/40 backdrop-blur-sm flex items-end sm:items-center justify-center sm:p-4 animate-in fade-in duration-200">
+                    <div className="bg-white rounded-t-[1.5rem] sm:rounded-[1.5rem] shadow-2xl w-full sm:max-w-lg flex flex-col max-h-[95vh] sm:max-h-[95vh] overflow-hidden animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-200">
+                        <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 flex-shrink-0 z-10">
                             <div>
-                                <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">Complete Payment</h2>
-                                <p className="text-slate-500 text-sm mt-0.5">Select a payment method to finalize the sale.</p>
+                                <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight">Complete Payment</h2>
+                                <p className="text-slate-500 text-xs sm:text-sm mt-0.5">Select a payment method.</p>
                             </div>
                             <button onClick={() => setCheckoutModal(false)} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-200 text-slate-400 transition-colors">
                                 <X size={18} />
                             </button>
                         </div>
 
-                        <div className="py-5 px-6 bg-slate-900 flex flex-col items-center justify-center text-white relative overflow-hidden flex-shrink-0">
+                        <div className="py-4 sm:py-5 px-4 sm:px-6 bg-slate-900 flex flex-col items-center justify-center text-white relative overflow-hidden flex-shrink-0">
                             <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/5 rounded-full blur-2xl"></div>
                             <div className="absolute -left-8 -bottom-8 w-32 h-32 bg-indigo-500/20 rounded-full blur-2xl"></div>
-                            <p className="text-slate-300 font-medium text-sm mb-1 z-10 uppercase tracking-widest">{isReturnMode ? 'Total Refund Due' : 'Total Amount Due'}</p>
-                            <p className="text-5xl font-extrabold tracking-tight z-10">Rs. {Math.abs(finalCartTotal).toFixed(2)}</p>
+                            <p className="text-slate-300 font-medium text-xs sm:text-sm mb-1 z-10 uppercase tracking-widest">{isReturnMode ? 'Total Refund Due' : 'Amount Due'}</p>
+                            <p className="text-3xl sm:text-5xl font-extrabold tracking-tight z-10">Rs. {Math.abs(finalCartTotal).toFixed(2)}</p>
                         </div>
 
-                        <div className="flex-1 overflow-y-auto min-h-0 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-slate-200 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-300">
-                            <div className="p-6">
-                                <div className="grid grid-cols-4 gap-2 mb-6 p-1 bg-slate-100 rounded-xl">
+                        <div className="flex-1 overflow-y-auto min-h-0">
+                            <div className="p-4 sm:p-6">
+                                <div className="grid grid-cols-4 gap-1.5 sm:gap-2 mb-4 sm:mb-6 p-1 bg-slate-100 rounded-xl">
                                     {[
                                         { id: 'cash', label: 'Cash', icon: Banknote },
                                         { id: 'card', label: 'Card', icon: CreditCard },
@@ -899,7 +931,7 @@ export default function POSPage() {
                                                 setPaymentMethod(tab.id as any);
                                                 if (tab.id === 'cash') setTenderedAmount(Math.abs(finalCartTotal).toFixed(2));
                                             }}
-                                            className={`flex flex-col items-center justify-center gap-1.5 py-3 rounded-lg text-xs font-bold transition-all ${paymentMethod === tab.id ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}
+                                            className={`flex flex-col items-center justify-center gap-1 sm:gap-1.5 py-2.5 sm:py-3 rounded-lg text-[10px] sm:text-xs font-bold transition-all ${paymentMethod === tab.id ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}
                                         >
                                             <tab.icon size={18} className={paymentMethod === tab.id ? "text-indigo-500" : "opacity-70"} />
                                             {tab.label}
@@ -1063,17 +1095,17 @@ export default function POSPage() {
                         </div>
 
                         {/* Footer Buttons */}
-                        <div className="p-5 border-t border-slate-100 bg-slate-50 rounded-b-[1.5rem] flex gap-3 flex-shrink-0 z-10">
+                        <div className="p-3 sm:p-5 border-t border-slate-100 bg-slate-50 rounded-b-[1.5rem] flex gap-2 sm:gap-3 flex-shrink-0 z-10 safe-area-bottom">
                             <button
                                 onClick={() => setCheckoutModal(false)}
-                                className="flex-1 h-14 bg-white border border-slate-200 text-slate-700 rounded-xl font-bold hover:bg-slate-100 transition-all active:scale-95"
+                                className="flex-1 h-12 sm:h-14 bg-white border border-slate-200 text-slate-700 rounded-xl font-bold hover:bg-slate-100 transition-all active:scale-95 text-sm sm:text-base"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={processCheckout}
                                 disabled={isProcessing || (paymentMethod === 'cash' && changeDue < 0 && !isReturnMode)}
-                                className="flex-[2] h-14 flex items-center justify-center gap-2 bg-indigo-600 text-white rounded-xl font-bold shadow-[0_4px_14px_rgba(79,70,229,0.3)] hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50 disabled:shadow-none disabled:active:scale-100"
+                                className="flex-[2] h-12 sm:h-14 flex items-center justify-center gap-2 bg-indigo-600 text-white rounded-xl font-bold shadow-[0_4px_14px_rgba(79,70,229,0.3)] hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50 disabled:shadow-none disabled:active:scale-100 text-sm sm:text-base"
                             >
                                 {isProcessing ? <RefreshCw size={20} className="animate-spin" /> : <><CheckCircle2 size={20} /> Confirm Sale</>}
                             </button>
@@ -1208,8 +1240,8 @@ export default function POSPage() {
 
             {/* --- THERMAL RECEIPT MODAL --- */}
             {receiptMode && (
-                <div className="fixed inset-0 z-[100] bg-white flex flex-col items-center overflow-y-auto py-10 print:py-0 print:p-0">
-                    <div className="w-[300px] bg-white p-6 shadow-xl border border-gray-100 print:shadow-none print:border-none">
+                <div className="fixed inset-0 z-[100] bg-white flex flex-col items-center overflow-y-auto py-6 sm:py-10 print:py-0 print:p-0">
+                    <div className="w-[280px] sm:w-[300px] bg-white p-4 sm:p-6 shadow-xl border border-gray-100 print:shadow-none print:border-none">
                         <div className="flex justify-center mb-6">
                             <button
                                 onClick={() => setReceiptMode(null)}
@@ -1287,7 +1319,7 @@ export default function POSPage() {
             )}
 
             {/* --- TOAST NOTIFICATIONS OVERLAY --- */}
-            <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[9999] flex flex-col gap-3 pointer-events-none print:hidden">
+            <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[9999] flex flex-col gap-3 pointer-events-none print:hidden max-w-[calc(100vw-2rem)]">
                 {toasts.map((toast: any) => (
                     <div key={toast.id} className="pointer-events-auto w-full sm:w-[350px] bg-white border-l-4 border-amber-500 rounded-xl shadow-2xl p-4 flex gap-3 animate-in slide-in-from-right-8 fade-in duration-300">
                         <AlertTriangle size={20} className="text-amber-500 flex-shrink-0 mt-0.5" />

@@ -55,11 +55,11 @@ export default function NotificationsPage() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-50 p-4 sm:p-6 lg:p-8 font-sans text-slate-900">
+        <div className="min-h-[100dvh] bg-slate-50 p-3 sm:p-6 lg:p-8 pb-20 sm:pb-8 font-sans text-slate-900">
             <div className="max-w-4xl mx-auto">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center border border-indigo-200 shadow-sm relative">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
+                    <div className="flex items-start sm:items-center gap-3">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center border border-indigo-200 shadow-sm relative">
                             <Bell size={20} />
                             {notifications.length > 0 && (
                                 <span className="absolute -top-1 -right-1 flex h-3 w-3">
@@ -69,15 +69,15 @@ export default function NotificationsPage() {
                             )}
                         </div>
                         <div>
-                            <h1 className="text-2xl font-bold tracking-tight text-slate-900">System Notifications</h1>
-                            <p className="text-sm text-slate-500 mt-0.5">Alerts, low stock warnings, and important events.</p>
+                            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">System Notifications</h1>
+                            <p className="text-xs sm:text-sm text-slate-500 mt-0.5">Alerts, low stock warnings, and important events.</p>
                         </div>
                     </div>
 
                     {notifications.length > 0 && (
                         <button
                             onClick={clearNotifications}
-                            className="h-10 px-4 flex items-center gap-2 text-sm font-semibold rounded-lg bg-white border border-slate-200 text-slate-600 hover:text-red-600 hover:bg-red-50 hover:border-red-200 transition-all shadow-sm"
+                            className="h-10 sm:h-11 px-4 flex items-center justify-center gap-2 text-sm font-semibold rounded-lg bg-white border border-slate-200 text-slate-600 hover:text-red-600 hover:bg-red-50 hover:border-red-200 transition-all shadow-sm active:scale-95 w-full sm:w-auto mt-2 sm:mt-0"
                         >
                             <Trash2 size={16} /> Clear All
                         </button>
@@ -96,26 +96,26 @@ export default function NotificationsPage() {
                     ) : (
                         <div className="divide-y divide-slate-100">
                             {notifications.map((notif, idx) => (
-                                <div key={idx} className="p-5 sm:p-6 hover:bg-slate-50/50 transition-colors flex gap-4">
+                                <div key={idx} className="p-4 sm:p-6 hover:bg-slate-50/50 transition-colors flex gap-3 sm:gap-4">
                                     <div className="flex-shrink-0 mt-0.5">
                                         {notif.type === 'warning' ? (
-                                            <div className="w-10 h-10 bg-amber-50 text-amber-500 rounded-full flex items-center justify-center border border-amber-100 placeholder-slate-400">
-                                                <AlertTriangle size={20} />
+                                            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-amber-50 text-amber-500 rounded-full flex items-center justify-center border border-amber-100 placeholder-slate-400">
+                                                <AlertTriangle size={16} className="sm:w-5 sm:h-5" />
                                             </div>
                                         ) : (
-                                            <div className="w-10 h-10 bg-slate-100 text-slate-500 rounded-full flex items-center justify-center border border-slate-200">
-                                                <Info size={20} />
+                                            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-slate-100 text-slate-500 rounded-full flex items-center justify-center border border-slate-200">
+                                                <Info size={16} className="sm:w-5 sm:h-5" />
                                             </div>
                                         )}
                                     </div>
-                                    <div className="flex-1">
-                                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1">
-                                            <h4 className="text-sm font-bold text-slate-900">{notif.title || 'System Alert'}</h4>
-                                            <span className="text-[11px] font-semibold text-slate-400 flex items-center gap-1">
-                                                <Calendar size={12} /> {format(new Date(notif.created_at), 'PP p')}
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1 sm:mb-1.5">
+                                            <h4 className="text-sm font-bold text-slate-900 truncate pr-2">{notif.title || 'System Alert'}</h4>
+                                            <span className="text-[10px] sm:text-[11px] font-semibold text-slate-400 flex items-center gap-1 flex-shrink-0">
+                                                <Calendar size={12} className="sm:w-[14px] sm:h-[14px]" /> {format(new Date(notif.created_at), 'PP p')}
                                             </span>
                                         </div>
-                                        <p className="text-sm text-slate-600 leading-relaxed">{notif.message}</p>
+                                        <p className="text-xs sm:text-sm text-slate-600 leading-relaxed break-words">{notif.message}</p>
                                     </div>
                                 </div>
                             ))}

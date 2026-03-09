@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { format, parseISO } from 'date-fns';
 import { supabase } from '../../lib/supabase';
 import { useRole } from '@/hooks/useRole';
@@ -47,9 +47,34 @@ interface ChartItem {
     profit: number;
 }
 
+/**
+ * Custom hook: detect screen width breakpoints reactively.
+ * Returns { isMobile, isTablet, isDesktop } for layout decisions.
+ */
+function useBreakpoint() {
+    const [width, setWidth] = useState(
+        typeof window !== 'undefined' ? window.innerWidth : 1024
+    );
+
+    useEffect(() => {
+        const handleResize = () => setWidth(window.innerWidth);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    return {
+        isMobile: width < 640,
+        isTablet: width >= 640 && width < 1024,
+        isDesktop: width >= 1024,
+        width,
+    };
+}
+
 export default function DashboardPage() {
     const { isAdmin, loading: roleLoading } = useRole();
     const router = useRouter();
+    const { isMobile, isTablet } = useBreakpoint();
+
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState({
         totalRevenue: 0,
@@ -70,7 +95,15 @@ export default function DashboardPage() {
         }
     }, [roleLoading, isAdmin]);
 
-    async function fetchDashboardData() {
+    // Close export menu when clicking outside
+    useEffect(() => {
+        if (!exportMenuOpen) return;
+        const handleClickOutside = () => setExportMenuOpen(false);
+        document.addEventListener('click', handleClickOutside);
+        return () => document.removeEventListener('click', handleClickOutside);
+    }, [exportMenuOpen]);
+
+    const fetchDashboardData = useCallback(async () => {
         setLoading(true);
 
         try {
@@ -143,9 +176,8 @@ export default function DashboardPage() {
 
             setChartData(chartDataArray);
 
-            // Process Recent Transactions (Directly use sales, take top 10)
-            const recent = sales.slice(0, 10); // Take the 10 most recent sales directly
-
+            // Process Recent Transactions (top 10)
+            const recent = sales.slice(0, 10);
             setRecentSales(recent);
 
         } catch (error) {
@@ -153,7 +185,7 @@ export default function DashboardPage() {
         } finally {
             setLoading(false);
         }
-    }
+    }, []);
 
     const exportToCSV = () => {
         if (allSales.length === 0) return;
@@ -232,55 +264,109 @@ export default function DashboardPage() {
         setExportMenuOpen(false);
     };
 
+    // ----------------------------
+    // LOADING STATE
+    // ----------------------------
     if (loading || roleLoading) {
         return (
-            <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center font-sans">
-                <RefreshCw size={48} className="animate-spin text-indigo-500 mb-4 opacity-50" />
-                <p className="text-slate-500 font-medium tracking-tight">Loading Dashboard Data...</p>
+            <div className="min-h-screen min-h-[100dvh] bg-slate-50 flex flex-col items-center justify-center font-sans px-4">
+                <RefreshCw size={isMobile ? 36 : 48} className="animate-spin text-indigo-500 mb-4 opacity-50" />
+                <p className="text-slate-500 font-medium tracking-tight text-sm sm:text-base text-center">Loading Dashboard Data...</p>
             </div>
         );
     }
 
     if (!isAdmin) return null;
 
-    return (
-        <div className="min-h-screen bg-slate-50 p-4 sm:p-6 lg:p-8 font-sans text-slate-900">
+    // ----------------------------
+    // STAT CARD COMPONENT
+    // ----------------------------
+    const StatCard = ({
+        label,
+        value,
+        subLabel,
+        icon: Icon,
+        iconBg,
+        iconColor,
+        iconBorder,
+        valueColor = 'text-slate-900',
+        subColor = 'text-emerald-600',
+        pulse = false,
+    }: {
+        label: string;
+        value: string;
+        subLabel: string;
+        icon: any;
+        iconBg: string;
+        iconColor: string;
+        iconBorder: string;
+        valueColor?: string;
+        subColor?: string;
+        pulse?: boolean;
+    }) => (
+        <div className="bg-white p-4 sm:p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between gap-3 transition-all hover:shadow-md hover:border-slate-300">
+            <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm font-medium text-slate-500 mb-0.5 sm:mb-1 truncate">{label}</p>
+                <h3 className={`text-lg sm:text-xl md:text-2xl font-bold ${valueColor} truncate`}>{value}</h3>
+                <p className={`text-[10px] sm:text-xs ${subColor} font-medium mt-0.5 sm:mt-1 inline-flex items-center gap-1 line-clamp-1`}>
+                    {subLabel}
+                </p>
+            </div>
+            <div className={`w-10 h-10 sm:w-12 sm:h-12 ${iconBg} ${iconColor} rounded-lg flex items-center justify-center border ${iconBorder} flex-shrink-0 ${pulse ? 'animate-pulse' : ''}`}>
+                <Icon size={isMobile ? 18 : 24} />
+            </div>
+        </div>
+    );
 
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-slate-900">Financial Dashboard</h1>
-                    <p className="text-sm text-slate-500 mt-1">Overview of your store's performance metrics.</p>
+    // Chart bar size responsive
+    const chartBarSize = isMobile ? 14 : isTablet ? 18 : 24;
+    const chartLeftMargin = isMobile ? -30 : -20;
+    const chartFontSize = isMobile ? 10 : 12;
+
+    return (
+        <div className="min-h-screen min-h-[100dvh] bg-slate-50 p-3 pt-14 sm:p-4 sm:pt-4 md:p-6 lg:p-8 font-sans text-slate-900">
+
+            {/* ====== HEADER ====== */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-5 sm:mb-6 md:mb-8">
+                <div className="min-w-0">
+                    <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">Financial Dashboard</h1>
+                    <p className="text-xs sm:text-sm text-slate-500 mt-0.5 sm:mt-1">Overview of your store&apos;s performance metrics.</p>
                 </div>
 
-                <div className="flex items-center gap-2">
-                    <button onClick={fetchDashboardData} className="flex items-center gap-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium transition-all shadow-sm active:scale-95">
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <button
+                        onClick={fetchDashboardData}
+                        className="flex-1 sm:flex-initial flex items-center justify-center gap-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-3 sm:px-4 py-2.5 sm:py-2 rounded-lg text-sm font-medium transition-all shadow-sm active:scale-95"
+                    >
                         <RefreshCw size={16} className="text-slate-400" />
-                        Refresh
+                        <span className="hidden xs:inline sm:inline">Refresh</span>
                     </button>
 
-                    <div className="relative">
+                    <div className="relative flex-1 sm:flex-initial">
                         <button
-                            onClick={() => setExportMenuOpen(!exportMenuOpen)}
-                            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all shadow-[0_4px_10px_rgb(79,70,229,0.2)] active:scale-95"
+                            onClick={(e) => { e.stopPropagation(); setExportMenuOpen(!exportMenuOpen); }}
+                            className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-3 sm:px-4 py-2.5 sm:py-2 rounded-lg text-sm font-medium transition-all shadow-[0_4px_10px_rgb(79,70,229,0.2)] active:scale-95"
                         >
                             <Download size={16} />
-                            Export Report
+                            <span>Export</span>
                             <ChevronDown size={14} className={`transition-transform ${exportMenuOpen ? 'rotate-180' : ''}`} />
                         </button>
 
                         {exportMenuOpen && (
-                            <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100 origin-top-right">
+                            <div
+                                className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 z-50 overflow-hidden"
+                                onClick={(e) => e.stopPropagation()}
+                            >
                                 <button
                                     onClick={exportToCSV}
-                                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 transition-colors text-left border-b border-slate-50"
+                                    className="w-full flex items-center gap-3 px-4 py-3.5 sm:py-3 text-sm text-slate-700 hover:bg-slate-50 transition-colors text-left border-b border-slate-50"
                                 >
                                     <FileSpreadsheet size={18} className="text-emerald-500" />
                                     <span>Export as CSV</span>
                                 </button>
                                 <button
                                     onClick={exportToPDF}
-                                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 transition-colors text-left"
+                                    className="w-full flex items-center gap-3 px-4 py-3.5 sm:py-3 text-sm text-slate-700 hover:bg-slate-50 transition-colors text-left"
                                 >
                                     <FileText size={18} className="text-red-500" />
                                     <span>Export as PDF</span>
@@ -291,136 +377,157 @@ export default function DashboardPage() {
                 </div>
             </div>
 
-            {/* Top Stats Row (Bento Style) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            {/* ====== STAT CARDS ====== */}
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-5 sm:mb-6 md:mb-8">
 
-                {/* Metric 1 - Total Revenue */}
-                <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
-                    <div>
-                        <p className="text-sm font-medium text-slate-500 mb-1">Total Revenue</p>
-                        <h3 className="text-2xl font-bold text-slate-900">Rs. {stats.totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h3>
-                        <p className="text-xs text-emerald-600 font-medium mt-1 inline-flex items-center gap-1">
-                            All time generated
-                        </p>
-                    </div>
-                    <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center border border-indigo-100">
-                        <Banknote size={24} />
-                    </div>
-                </div>
+                <StatCard
+                    label="Total Revenue"
+                    value={`Rs. ${stats.totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                    subLabel="All time generated"
+                    icon={Banknote}
+                    iconBg="bg-indigo-50"
+                    iconColor="text-indigo-600"
+                    iconBorder="border-indigo-100"
+                />
 
-                {/* Metric 2 - Total Profit */}
-                <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
-                    <div>
-                        <p className="text-sm font-medium text-slate-500 mb-1">Total Profit</p>
-                        <h3 className="text-2xl font-bold text-slate-900">Rs. {stats.totalProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h3>
-                        <p className="text-xs text-emerald-600 font-medium mt-1 inline-flex items-center gap-1">
-                            All time net profit
-                        </p>
-                    </div>
-                    <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center border border-emerald-100">
-                        <TrendingUp size={24} />
-                    </div>
-                </div>
+                <StatCard
+                    label="Total Profit"
+                    value={`Rs. ${stats.totalProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                    subLabel="All time net profit"
+                    icon={TrendingUp}
+                    iconBg="bg-emerald-50"
+                    iconColor="text-emerald-600"
+                    iconBorder="border-emerald-100"
+                />
 
-                {/* Metric 3 - Items Sold */}
-                <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
-                    <div>
-                        <p className="text-sm font-medium text-slate-500 mb-1">Items Sold</p>
-                        <h3 className="text-2xl font-bold text-slate-900">{stats.itemsSold.toLocaleString()}</h3>
-                        <p className="text-xs text-slate-400 font-medium mt-1 inline-flex items-center gap-1">
-                            Total items sold in last 30 days
-                        </p>
-                    </div>
-                    <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center border border-blue-100">
-                        <ShoppingBag size={24} />
-                    </div>
-                </div>
+                <StatCard
+                    label="Items Sold"
+                    value={stats.itemsSold.toLocaleString()}
+                    subLabel="Last 30 days"
+                    icon={ShoppingBag}
+                    iconBg="bg-blue-50"
+                    iconColor="text-blue-600"
+                    iconBorder="border-blue-100"
+                    subColor="text-slate-400"
+                />
 
-                {/* Metric 4 - Low Stock Alerts */}
-                <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
-                    <div>
-                        <p className="text-sm font-medium text-slate-500 mb-1">Low Stock Alerts</p>
-                        <h3 className={`text-2xl font-bold ${stats.lowStockItems > 0 ? "text-red-600" : "text-emerald-600"}`}>{stats.lowStockItems} Items</h3>
-                        <p className={`text-xs ${stats.lowStockItems > 0 ? "text-red-500" : "text-emerald-500"} font-medium mt-1 inline-flex items-center gap-1`}>
-                            {stats.lowStockItems > 0 ? "Needs immediate restock" : "Inventory is looking healthy"}
-                        </p>
-                    </div>
-                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center border ${stats.lowStockItems > 0 ? "bg-red-50 text-red-600 border-red-100 animate-pulse" : "bg-emerald-50 text-emerald-600 border-emerald-100"}`}>
-                        <AlertCircle size={24} />
-                    </div>
-                </div>
+                <StatCard
+                    label="Low Stock"
+                    value={`${stats.lowStockItems} Items`}
+                    subLabel={stats.lowStockItems > 0 ? "Needs restock" : "Inventory healthy"}
+                    icon={AlertCircle}
+                    iconBg={stats.lowStockItems > 0 ? "bg-red-50" : "bg-emerald-50"}
+                    iconColor={stats.lowStockItems > 0 ? "text-red-600" : "text-emerald-600"}
+                    iconBorder={stats.lowStockItems > 0 ? "border-red-100" : "border-emerald-100"}
+                    valueColor={stats.lowStockItems > 0 ? "text-red-600" : "text-emerald-600"}
+                    subColor={stats.lowStockItems > 0 ? "text-red-500" : "text-emerald-500"}
+                    pulse={stats.lowStockItems > 0}
+                />
 
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* ====== CHART + RECENT TRANSACTIONS ====== */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
 
                 {/* Chart Section */}
-                <div className="lg:col-span-2 bg-white p-5 sm:p-6 rounded-xl border border-slate-200 shadow-sm h-[400px] flex flex-col">
-                    <div className="mb-6">
-                        <h2 className="text-base font-bold text-slate-900">Revenue vs. Profit</h2>
-                        <p className="text-sm text-slate-500">Last 7 days performance metrics</p>
+                <div className="lg:col-span-2 bg-white p-4 sm:p-5 md:p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col"
+                    style={{ minHeight: isMobile ? '280px' : '400px' }}
+                >
+                    <div className="mb-3 sm:mb-4 md:mb-6">
+                        <h2 className="text-sm sm:text-base font-bold text-slate-900">Revenue vs. Profit</h2>
+                        <p className="text-xs sm:text-sm text-slate-500">Last 7 days performance</p>
                     </div>
 
                     <div className="flex-1 w-full min-h-0">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart
                                 data={chartData}
-                                margin={{ top: 0, right: 0, left: -20, bottom: 0 }}
+                                margin={{ top: 0, right: 0, left: chartLeftMargin, bottom: 0 }}
                             >
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} dy={10} />
-                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
+                                <XAxis
+                                    dataKey="name"
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{ fill: '#64748b', fontSize: chartFontSize }}
+                                    dy={10}
+                                    interval={isMobile ? 1 : 0}
+                                />
+                                <YAxis
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{ fill: '#64748b', fontSize: chartFontSize }}
+                                    width={isMobile ? 40 : 60}
+                                    tickFormatter={(value: number) => {
+                                        if (value >= 1000) return `${(value / 1000).toFixed(0)}k`;
+                                        return value.toString();
+                                    }}
+                                />
                                 <Tooltip
                                     formatter={(value: any) => ['Rs. ' + Number(value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })]}
                                     cursor={{ fill: '#f8fafc' }}
-                                    contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                    contentStyle={{
+                                        borderRadius: '8px',
+                                        border: '1px solid #e2e8f0',
+                                        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                                        fontSize: isMobile ? '11px' : '13px',
+                                        padding: isMobile ? '6px 8px' : '8px 12px',
+                                    }}
                                 />
-                                <Legend wrapperStyle={{ paddingTop: '20px' }} iconType="circle" />
-                                <Bar dataKey="revenue" name="Gross Revenue" fill="#6366f1" radius={[4, 4, 0, 0]} barSize={24} />
-                                <Bar dataKey="profit" name="Net Profit" fill="#10b981" radius={[4, 4, 0, 0]} barSize={24} />
+                                <Legend
+                                    wrapperStyle={{ paddingTop: isMobile ? '8px' : '20px', fontSize: isMobile ? '11px' : '13px' }}
+                                    iconType="circle"
+                                    iconSize={isMobile ? 8 : 10}
+                                />
+                                <Bar dataKey="revenue" name="Revenue" fill="#6366f1" radius={[4, 4, 0, 0]} barSize={chartBarSize} />
+                                <Bar dataKey="profit" name="Profit" fill="#10b981" radius={[4, 4, 0, 0]} barSize={chartBarSize} />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
 
                 {/* Recent Sales Table / List */}
-                <div className="lg:col-span-1 bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col h-[400px]">
-                    <div className="p-5 border-b border-slate-100">
-                        <h2 className="text-base font-bold text-slate-900">Recent Transactions</h2>
-                        <p className="text-sm text-slate-500">Latest completed sales</p>
+                <div className="lg:col-span-1 bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col"
+                    style={{ minHeight: isMobile ? '320px' : '400px', maxHeight: isMobile ? '420px' : '400px' }}
+                >
+                    <div className="p-4 sm:p-5 border-b border-slate-100">
+                        <h2 className="text-sm sm:text-base font-bold text-slate-900">Recent Transactions</h2>
+                        <p className="text-xs sm:text-sm text-slate-500">Latest completed sales</p>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto p-2">
+                    <div className="flex-1 overflow-y-auto p-1.5 sm:p-2">
                         {recentSales.length > 0 ? (
                             <ul className="divide-y divide-slate-100">
                                 {recentSales.map((sale, idx) => (
-                                    <li key={idx} className="p-3 hover:bg-slate-50 rounded-lg transition-colors flex justify-between items-center group cursor-pointer">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">
-                                                <Banknote size={16} />
+                                    <li key={idx} className="p-2.5 sm:p-3 hover:bg-slate-50 rounded-lg transition-colors flex justify-between items-center group cursor-pointer gap-2">
+                                        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                                            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors flex-shrink-0">
+                                                <Banknote size={isMobile ? 14 : 16} />
                                             </div>
-                                            <div>
-                                                <p className="text-sm font-bold text-slate-900 line-clamp-1">{sale.name}</p>
-                                                <p className="text-[11px] font-semibold text-slate-400 mt-0.5">{format(new Date(sale.created_at), 'p')}</p>
+                                            <div className="min-w-0 flex-1">
+                                                <p className="text-xs sm:text-sm font-bold text-slate-900 truncate">{sale.name}</p>
+                                                <p className="text-[10px] sm:text-[11px] font-semibold text-slate-400 mt-0.5">{format(new Date(sale.created_at), 'p')}</p>
                                             </div>
                                         </div>
-                                        <div className="text-right">
-                                            <p className="text-sm font-bold text-slate-900">Rs. {sale.sold_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-                                            <p className="text-[11px] font-semibold text-emerald-500 mt-0.5">{(sale.sold_price - sale.cost_price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} profit</p>
+                                        <div className="text-right flex-shrink-0">
+                                            <p className="text-xs sm:text-sm font-bold text-slate-900">Rs. {sale.sold_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                                            <p className="text-[10px] sm:text-[11px] font-semibold text-emerald-500 mt-0.5">
+                                                {(sale.sold_price - sale.cost_price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} profit
+                                            </p>
                                         </div>
                                     </li>
                                 ))}
                             </ul>
                         ) : (
-                            <div className="h-full flex flex-col justify-center items-center text-slate-400">
-                                <ShoppingBag size={32} className="opacity-40 mb-2" />
-                                <p className="text-sm font-medium">No recent sales.</p>
+                            <div className="h-full flex flex-col justify-center items-center text-slate-400 py-8">
+                                <ShoppingBag size={isMobile ? 28 : 32} className="opacity-40 mb-2" />
+                                <p className="text-xs sm:text-sm font-medium">No recent sales.</p>
                             </div>
                         )}
                     </div>
 
-                    <div className="p-3 border-t border-slate-100 bg-slate-50/50 rounded-b-xl text-center">
-                        <Link href="/sales" className="text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors w-full inline-block">
+                    <div className="p-2.5 sm:p-3 border-t border-slate-100 bg-slate-50/50 rounded-b-xl text-center">
+                        <Link href="/sales" className="text-xs sm:text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors w-full inline-block py-1">
                             View All Sales →
                         </Link>
                     </div>
