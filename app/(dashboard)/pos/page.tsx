@@ -415,15 +415,25 @@ export default function POSPage() {
         let lowStockAlerts: string[] = [];
 
         for (const item of cart) {
-            const currentQty = Number(item.cartQty) || 1;
-            const newQty = item.quantity - (currentQty * sign);
+            const currentQtyInCart = Number(item.cartQty) || 1;
+
+            // Fetch latest inventory quantity to avoid out-of-sync or NaN issues (especially during refunds)
+            const { data: invData } = await supabase
+                .from('inventory')
+                .select('quantity')
+                .eq('id', item.id)
+                .single();
+
+            const currentInventoryQty = invData?.quantity ?? 0;
+            const newQty = currentInventoryQty - (currentQtyInCart * sign);
             const finalQty = newQty < 0 ? 0 : newQty;
+
             await supabase.from('inventory').update({ quantity: finalQty }).eq('id', item.id);
 
             if (!isReturnMode) {
                 const milestones = [100, 50, 20, 10, 5];
                 for (const milestone of milestones) {
-                    if (item.quantity >= milestone && finalQty < milestone) {
+                    if (currentInventoryQty >= milestone && finalQty < milestone) {
                         lowStockAlerts.push('\u26a0\ufe0f "' + item.name + '" stock just dropped below ' + milestone + '! (Now: ' + finalQty + ')');
                         break;
                     }
@@ -704,9 +714,24 @@ export default function POSPage() {
                                 <ShoppingCart size={20} className={isReturnMode ? "text-red-500" : "text-indigo-500"} />
                                 {isReturnMode ? 'Refunding Items' : 'Current Sale'}
                             </h2>
-                            <span className="bg-slate-100 text-slate-600 font-bold text-xs px-2.5 py-1 rounded-md">
-                                {cart.reduce((sum, item) => sum + (Number(item.cartQty) || 0), 0)} Items
-                            </span>
+                            <div className="flex items-center gap-2">
+                                {cart.length > 0 && (
+                                    <button
+                                        onClick={() => {
+                                            if (confirm('Clear all items from cart?')) {
+                                                setCart([]);
+                                                setDiscount({ type: 'fixed', value: 0 });
+                                            }
+                                        }}
+                                        className="text-[10px] font-bold text-red-500 hover:text-red-600 bg-red-50 hover:bg-red-100 px-2 py-1 rounded-md transition-colors"
+                                    >
+                                        Clear
+                                    </button>
+                                )}
+                                <span className="bg-slate-100 text-slate-600 font-bold text-xs px-2.5 py-1 rounded-md">
+                                    {cart.reduce((sum, item) => sum + (Number(item.cartQty) || 0), 0)} Items
+                                </span>
+                            </div>
                         </div>
 
                         {/* Cart Items List */}
@@ -1141,12 +1166,12 @@ export default function POSPage() {
                         <div className="p-6 space-y-4">
                             {/* Z-Report Summary */}
                             <div className="bg-slate-50 rounded-xl border border-slate-200 p-4 space-y-2 text-sm">
-                                <div className="flex justify-between"><span className="text-slate-500">Shift Opened</span><span className="font-semibold">{new Date(activeShift.opened_at).toLocaleTimeString()}</span></div>
-                                <div className="flex justify-between"><span className="text-slate-500">Cashier</span><span className="font-semibold">{activeShift.cashier_name}</span></div>
-                                <div className="flex justify-between"><span className="text-slate-500">Opening Float</span><span className="font-semibold">Rs. {activeShift.opening_cash}</span></div>
-                                <div className="flex justify-between border-t border-slate-200 pt-2 mt-2"><span className="text-slate-500">Gross Cash Sales</span><span className="font-bold text-slate-800">Rs. {shiftSalesTotal.toFixed(2)}</span></div>
-                                <div className="flex justify-between"><span className="text-slate-500 text-red-600 font-medium">Total Refunds</span><span className="font-bold text-red-600">- Rs. {shiftRefundsTotal.toFixed(2)}</span></div>
-                                <div className="flex justify-between"><span className="text-slate-500 text-amber-600 font-medium">Payouts (Expenses)</span><span className="font-bold text-amber-600">- Rs. {shiftPayoutsTotal.toFixed(2)}</span></div>
+                                <div className="flex justify-between"><span className="text-slate-600">Shift Opened</span><span className="font-semibold text-slate-800">{new Date(activeShift.opened_at).toLocaleTimeString()}</span></div>
+                                <div className="flex justify-between"><span className="text-slate-600">Cashier</span><span className="font-semibold text-slate-800">{activeShift.cashier_name}</span></div>
+                                <div className="flex justify-between"><span className="text-slate-600">Opening Float</span><span className="font-semibold text-slate-800">Rs. {activeShift.opening_cash}</span></div>
+                                <div className="flex justify-between border-t border-slate-200 pt-2 mt-2"><span className="text-slate-600">Gross Cash Sales</span><span className="font-bold text-slate-900">Rs. {shiftSalesTotal.toFixed(2)}</span></div>
+                                <div className="flex justify-between"><span className="text-red-600 font-medium">Total Refunds</span><span className="font-bold text-red-600">- Rs. {shiftRefundsTotal.toFixed(2)}</span></div>
+                                <div className="flex justify-between"><span className="text-amber-600 font-medium">Payouts (Expenses)</span><span className="font-bold text-amber-600">- Rs. {shiftPayoutsTotal.toFixed(2)}</span></div>
                                 <div className="flex justify-between border-t-2 border-slate-300 pt-2 mt-2"><span className="font-bold text-slate-900 text-base">Net Cash to Count</span><span className="font-extrabold text-emerald-600 text-lg">Rs. {(activeShift.opening_cash + shiftSalesTotal - shiftRefundsTotal - shiftPayoutsTotal).toFixed(2)}</span></div>
                             </div>
                             <div>

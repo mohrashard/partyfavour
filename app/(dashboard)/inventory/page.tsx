@@ -119,9 +119,51 @@ export default function InventoryPage() {
 
     async function handleDelete(id: string, name: string) {
         if (!confirm('Are you sure you want to delete "' + name + '"?')) return;
+
         const { error } = await supabase.from('inventory').delete().eq('id', id);
-        if (error) alert('Error deleting product: ' + error.message);
-        else fetchInventory();
+
+        if (error) {
+            if (error.code === '23503') { // Foreign key violation
+                if (confirm('This product has associated sales records. Deleting it will also remove those sales from history. Proceed with force delete?')) {
+                    // First delete associated sales
+                    const { error: salesError } = await supabase.from('sales').delete().eq('item_id', id);
+                    if (salesError) {
+                        alert('Error deleting associated sales: ' + salesError.message);
+                        return;
+                    }
+                    // Then try deleting the product again
+                    const { error: retryError } = await supabase.from('inventory').delete().eq('id', id);
+                    if (retryError) alert('Error during force delete: ' + retryError.message);
+                    else fetchInventory();
+                }
+            } else {
+                alert('Error deleting product: ' + error.message);
+            }
+        } else {
+            fetchInventory();
+        }
+    }
+
+    async function handleClearAll() {
+        if (!confirm('DANGER: This will permanently delete ALL products in the inventory and ALL associated sales records. This cannot be undone. Are you absolutely sure?')) return;
+
+        setLoading(true);
+        // Delete all sales first to satisfy FK constraints
+        const { error: salesError } = await supabase.from('sales').delete().not('id', 'is', null);
+        if (salesError) {
+            alert('Error clearing sales history: ' + salesError.message);
+            setLoading(false);
+            return;
+        }
+
+        // Delete all inventory
+        const { error: invError } = await supabase.from('inventory').delete().not('id', 'is', null);
+        if (invError) {
+            alert('Error clearing inventory: ' + invError.message);
+        } else {
+            setItems([]);
+        }
+        setLoading(false);
     }
 
     function handleEdit(item: any) {
@@ -355,15 +397,26 @@ export default function InventoryPage() {
                                         {filteredItems.length} / {items.length}
                                     </span>
                                 </h2>
-                                <div className="relative w-full sm:w-64">
-                                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                                    <input
-                                        type="text"
-                                        placeholder="Name, code, or supplier..."
-                                        value={searchTerm}
-                                        onChange={e => setSearchTerm(e.target.value)}
-                                        className="w-full h-10 pl-9 pr-4 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-slate-900 placeholder-slate-500"
-                                    />
+                                <div className="flex items-center gap-3">
+                                    {isAdmin && items.length > 0 && (
+                                        <button
+                                            onClick={handleClearAll}
+                                            className="h-9 px-3 flex items-center gap-2 bg-red-50 border border-red-200 text-red-600 rounded-lg text-xs font-bold transition-all hover:bg-red-100 shadow-sm active:scale-95"
+                                        >
+                                            <Trash2 size={14} />
+                                            Clear All
+                                        </button>
+                                    )}
+                                    <div className="relative w-full sm:w-64">
+                                        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                                        <input
+                                            type="text"
+                                            placeholder="Name, code, or supplier..."
+                                            value={searchTerm}
+                                            onChange={e => setSearchTerm(e.target.value)}
+                                            className="w-full h-10 pl-9 pr-4 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-slate-900 placeholder-slate-500"
+                                        />
+                                    </div>
                                 </div>
                             </div>
 

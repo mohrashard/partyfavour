@@ -136,9 +136,13 @@ export default function SalesPage() {
 
     // ── Clear All ────────────────────────────────────────────────────────────
     async function handleClearAll() {
+        if (!confirm('Are you sure you want to permanently clear ALL sales records? This cannot be undone.')) return;
         setIsClearing(true);
-        const { error } = await supabase.from('sales').delete().neq('id', '');
-        if (!error) {
+        // Using .not('id', 'is', null) is more robust for "delete all" than .neq('id', '')
+        const { error } = await supabase.from('sales').delete().not('id', 'is', null);
+        if (error) {
+            alert('Error clearing sales: ' + error.message);
+        } else {
             setAllSales([]);
             setExpandedReceipts(new Set());
         }
